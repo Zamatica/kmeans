@@ -1,4 +1,7 @@
 
 
-# https://benalexkeen.com/k-means-clustering-in-python/
+def main():
+    pass
 
+if __name__ == "__main__":
+    main()
