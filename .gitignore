@@ -1,2 +1,3 @@
-g.jpy
-images./
+**/*.jpg
+**/*.pyc
+images/*
