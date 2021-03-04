@@ -1,7 +1,6 @@
 
 import cv2
 import numpy as np
-import image
 import color_class
 
 # https://blog.paperspace.com/speed-up-kmeans-numpy-vectorization-broadcasting-profiling/
@@ -53,13 +52,17 @@ class KMeansImage:
                 centroids[centroid_index] = new_centroid
 
         for i, centroid_index in enumerate(self.assigned_centroids):
-            self.output[i] = self.colors[centroid_index].to_bgr()
+            self.output[i] = centroids[centroid_index]
 
         self.write_images()
 
 
     def write_images(self):
-        cv2.imwrite("output/kmeans.jpg", self.output.reshape(self.img.image.shape))
+        cv2.imwrite("output/kmeans-centroid.jpg", self.output.reshape(self.img.image.shape))
+
+        for i, centroid_index in enumerate(self.assigned_centroids):
+            self.output[i] = self.colors[centroid_index].to_bgr()
+        cv2.imwrite("output/kmeans-contrast.jpg", self.output.reshape(self.img.image.shape))
 
         for k in range(self.k):
             output_data = np.zeros((self.img.gray.shape[0] * self.img.gray.shape[1],))
@@ -78,7 +81,20 @@ class KMeansImage:
 
 
     def build_centroids(self):
+        def sort_centroids(centroids):
+            n = len(centroids)
+            for i in range(n):
+                for j in range(0, n - 1):
+                    gray_scale_j = 0.2126 * centroids[j][0] + 0.7152 * centroids[j][1] + 0.0722 * centroids[j][2]
+                    gray_scale_j2 = 0.2126 * centroids[j + 1][0] + 0.7152 * centroids[j + 1][1] + 0.0722 * centroids[j + 1][2]
+
+                    if gray_scale_j2 < gray_scale_j:
+                        for k in range(len(centroids[j])):
+                            centroids[j][k], centroids[j + 1][k] = centroids[j + 1][k], centroids[j][k]
+                    
         centroids = np.random.randint(0, 255, size=(self.k, 3))
+
+        sort_centroids(centroids)
 
         for i in range(self.k):
             color = color_class.Color()
@@ -90,6 +106,6 @@ class KMeansImage:
 
 
     def assignment(self, img1d, centroids):
-        distance = ((img1d - centroids) ** 2).sum(axis = img1d.ndim - 1)
+        distance = ((img1d - centroids) ** 2).sum(axis = 2)
 
         self.assigned_centroids = np.argmin(distance, axis = 1)

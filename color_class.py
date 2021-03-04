@@ -146,10 +146,10 @@ class Color:
                (self.green - pixel[1]) ** 2 + \
                (self.blue - pixel[0]) ** 2
 
-    def to_rgb_tuple(self) -> tuple:
-        return (self.red, self.green, self.blue)
+    def to_rgb(self):
+        return [self.red, self.green, self.blue]
 
-    def to_bgr(self) -> tuple:
+    def to_bgr(self):
         return [self.blue, self.green, self.red]
 
     def from_hex_index(self, index):
