@@ -5,10 +5,10 @@ import image
 import kmeans
 
 def main():
-    img = image.Image("images/hand.jpeg")
+    img = image.Image("images/random.jpg")
     img.read()
 
-    gen = kmeans.KMeansImage(4, img)
+    gen = kmeans.KMeansImage(100, img)
 
     gen.execute()
 

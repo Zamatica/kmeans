@@ -1,8 +1,8 @@
 
 import cv2
 import numpy as np
-import point
 import image
+import color_class
 
 # https://benalexkeen.com/k-means-clustering-in-python/
 
@@ -11,6 +11,7 @@ import image
 #    Use this count as a % of often it is added
 #    Generate a picture based off the final %s
 
+np.random.seed(0)
 
 class Centroid:
     def __init__(self, color) -> None:
@@ -38,21 +39,11 @@ class KMeansImage:
 
 
     def build_centroids(self):
-        def generate_colors(count):
-            colors = []
-            for i in range(count):
-                color = image.Color()
-                color.from_hsv( (((i % 3) * count / 3) + (i / 3)) * 255.0 / count,
-                               255,
-                               128)
-                colors.append(color)
-            return colors
-
         centroids = []
 
-        colors = generate_colors(self.k)
-
-        for color in colors:
+        for i in range(self.k):
+            color = color_class.Color()
+            color.from_hex_index(i)
             centroids.append(Centroid(color))
 
         return centroids
@@ -66,8 +57,8 @@ class KMeansImage:
                 min_distance = float('inf')
                 centroid_index = -1
                 for i, centroid in enumerate(centroids):
-                    distance = centroid.color.distance(pixel_value[0], pixel_value[1], pixel_value[2])
-                    
+                    distance = centroid.color.distance(pixel_value[2], pixel_value[1], pixel_value[0])
+
                     if distance < min_distance:
                         centroid_index = i
                         min_distance = distance

@@ -8,13 +8,24 @@ class Point3D:
         self.z = z
 
     def distance(self, point: 'Point3D') -> float:
-        return (self.x - point.x) * (self.x - point.x) + \
-               (self.y - point.y) * (self.y - point.y) + \
-               (self.z - point.z) * (self.z - point.z)
+        return (self.x - point.x) ** 2 + \
+               (self.y - point.y) ** 2 + \
+               (self.z - point.z) ** 2
 
     def distance_sqrt(self, point: 'Point3D') -> float:
         return np.sqrt(self.distance(point))
 
+class Point2D:
+    def __init__(self, x, y) -> None:
+        self.x = x
+        self.y = y
+    
+    def distance(self, point: 'Point2D'):
+        return (self.x - point.x) ** 2 + \
+               (self.y - point.y) ** 2
+
+    def distance_sqrt(self, point: 'Point1D'):
+        return np.sqrt(self.distance(point))
 
 class Point1D:
     def __init__(self, val: int = 0) -> None:
