@@ -31,6 +31,8 @@ class KMeansImage:
         self.output = np.empty(self.img.image.shape)
         self.output = self.output.reshape((-1, 3))
 
+        self.count_output = np.zeros((self.img.image.shape[0] * self.img.image.shape[1], self.k))
+
 
     # Runs kMeans on the stored image
     def execute(self):
@@ -41,6 +43,8 @@ class KMeansImage:
         for n in range(self.iterations):
             self.assignment(img1d[:, None, :], centroids[None, :, :])
 
+            self.update_count()
+
             for centroid_index in range(centroids.shape[1]):
                 cluster_data = img1d[self.assigned_centroids == centroid_index]
 
@@ -48,14 +52,29 @@ class KMeansImage:
 
                 centroids[centroid_index] = new_centroid
 
-        for i in range(len(self.assigned_centroids)):
-            self.output[i] = self.colors[self.assigned_centroids[i]].to_bgr()
+        for i, centroid_index in enumerate(self.assigned_centroids):
+            self.output[i] = self.colors[centroid_index].to_bgr()
 
         self.write_images()
 
 
     def write_images(self):
-        cv2.imwrite("out.jpg", self.output.reshape(self.img.image.shape))
+        cv2.imwrite("output/kmeans.jpg", self.output.reshape(self.img.image.shape))
+
+        for k in range(self.k):
+            output_data = np.zeros((self.img.gray.shape[0] * self.img.gray.shape[1],))
+
+            for i in range(len(self.count_output)):
+                pixel_cluster_count = self.count_output[i][k]
+
+                output_data[i] = int((float(pixel_cluster_count) / self.iterations) * 255)
+
+            cv2.imwrite("output/out-k" + str(k) + ".jpg", output_data.reshape(self.img.gray.shape))
+
+
+    def update_count(self):
+        for i, centroid_index in enumerate(self.assigned_centroids):
+            self.count_output[i][centroid_index] += 1
 
 
     def build_centroids(self):
