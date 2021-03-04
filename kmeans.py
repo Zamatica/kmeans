@@ -1,76 +1,34 @@
+#!/usr/bin/python3
 
-import cv2
-import numpy as np
+import sys
+
 import image
-import color_class
+import kmeans_image
 
-# https://blog.paperspace.com/speed-up-kmeans-numpy-vectorization-broadcasting-profiling/
-#    Mine was terrible slow, so i updated it with this. It's like cocaine
+def help_screen():
+    print(" Invalid Command Usage:")
+    print("   main.py <k> <iterations> <image_file>")
+    print("                k -- number of clusters")
+    print("       iterations -- number of convergence iterations")
+    print("       image_file -- directory path to image")
+    exit(1)
 
+def main():
 
-# Create count of how many times each pixel is assigned to a centroid
-#    Use this count as a % of often it is added
-#    Generate a picture based off the final %s
+    if len(sys.argv) < 4:
+        help_screen()
 
-#np.random.seed(4)
+    k = int(sys.argv[1])
+    iterations = int(sys.argv[2])
+    image_file = sys.argv[3]
 
-class Centroid:
-    def __init__(self, color) -> None:
-        self.color = color
+    img = image.Image(image_file)
+    img.read()
 
-class KMeansImage:
-    def __init__(self, k, iterations, image):
-        self.k = k
-        self.iterations = iterations
+    gen = kmeans_image.KMeansImage(k, iterations, img)
 
-        self.centroids = []
-        self.assigned_centroids = np.zeros(image.image.shape[0] * image.image.shape[1], dtype = np.int32)
-        self.colors = []
-
-        self.img = image
-        self.output = np.empty(self.img.image.shape)
-        self.output = self.output.reshape((-1, 3))
+    gen.execute()
 
 
-    # Runs kMeans on the stored image
-    def execute(self):
-        centroids = self.build_centroids()
-
-        img1d = self.img.image.reshape((-1, 3))
-
-        for n in range(self.iterations):
-            self.assignment(img1d[:, None, :], centroids[None, :, :])
-
-            for centroid_index in range(centroids.shape[1]):
-                cluster_data = img1d[self.assigned_centroids == centroid_index]
-
-                new_centroid = cluster_data.mean(axis = 0)
-
-                centroids[centroid_index] = new_centroid
-
-        for i in range(len(self.assigned_centroids)):
-            self.output[i] = self.colors[self.assigned_centroids[i]].to_bgr()
-
-        self.write_images()
-
-
-    def write_images(self):
-        cv2.imwrite("out.jpg", self.output.reshape(self.img.image.shape))
-
-
-    def build_centroids(self):
-        centroids = np.random.randint(0, 255, size=(self.k, 3))
-
-        for i in range(self.k):
-            color = color_class.Color()
-            color.from_hex_index(i)
-
-            self.colors.append(color)
-
-        return centroids
-
-
-    def assignment(self, img1d, centroids):
-        distance = ((img1d - centroids) ** 2).sum(axis = img1d.ndim - 1)
-
-        self.assigned_centroids = np.argmin(distance, axis = 1)
+if __name__ == "__main__":
+    main()
