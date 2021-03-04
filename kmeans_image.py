@@ -11,7 +11,7 @@ import color_class
 #    Use this count as a % of often it is added
 #    Generate a picture based off the final %s
 
-#np.random.seed(4)
+np.random.seed(4)
 
 class Centroid:
     def __init__(self, color) -> None:
@@ -40,16 +40,21 @@ class KMeansImage:
         img1d = self.img.image.reshape((-1, 3))
 
         for n in range(self.iterations):
+            sse = 0
+
             self.assignment(img1d[:, None, :], centroids[None, :, :])
 
             self.update_count()
 
-            for centroid_index in range(centroids.shape[1]):
+            for centroid_index in range(centroids.shape[0]):
                 cluster_data = img1d[self.assigned_centroids == centroid_index]
-
                 new_centroid = cluster_data.mean(axis = 0)
 
                 centroids[centroid_index] = new_centroid
+            
+            sse = ((img1d - centroids[self.assigned_centroids]) ** 2).sum() / len(img1d)
+            if sse < 0.5:
+                break
 
         for i, centroid_index in enumerate(self.assigned_centroids):
             self.output[i] = centroids[centroid_index]
@@ -91,10 +96,19 @@ class KMeansImage:
                     if gray_scale_j2 < gray_scale_j:
                         for k in range(len(centroids[j])):
                             centroids[j][k], centroids[j + 1][k] = centroids[j + 1][k], centroids[j][k]
-                    
+
         centroids = np.random.randint(0, 255, size=(self.k, 3))
 
+        #centroids = []
+        #for j in range(self.k):
+        #    centroid = self.img.image[np.random.randint(self.img.image.shape[0])][np.random.randint(self.img.image.shape[1])]
+        #    centroids.append(centroid)
+#
+        #centroids = np.array(centroids)
+
         sort_centroids(centroids)
+
+        print(centroids)
 
         for i in range(self.k):
             color = color_class.Color()
@@ -106,6 +120,9 @@ class KMeansImage:
 
 
     def assignment(self, img1d, centroids):
-        distance = ((img1d - centroids) ** 2).sum(axis = 2)
+        distance = ((img1d - centroids) ** 2).sum(axis = img1d.ndim - 1)
 
         self.assigned_centroids = np.argmin(distance, axis = 1)
+        #print(distance)
+        #print(np.argmin(distance, axis = 1))
+        #input()
