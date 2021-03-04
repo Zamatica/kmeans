@@ -1,4 +1,5 @@
-COLORS = ["#000000", "#FFFF00", "#1CE6FF", "#FF34FF", "#FF4A46", "#008941", "#006FA6", "#A30059",
+COLORS = [
+        "#FFFF00", "#1CE6FF", "#FF34FF", "#FF4A46", "#008941", "#006FA6", "#A30059",
         "#FFDBE5", "#7A4900", "#0000A6", "#63FFAC", "#B79762", "#004D43", "#8FB0FF", "#997D87",
         "#5A0007", "#809693", "#FEFFE6", "#1B4400", "#4FC601", "#3B5DFF", "#4A3B53", "#FF2F80",
         "#61615A", "#BA0900", "#6B7900", "#00C2A0", "#FFAA92", "#FF90C9", "#B903AA", "#D16100",
@@ -140,11 +141,16 @@ class Color:
                (self.green - green) ** 2 + \
                (self.blue - blue) ** 2
 
+    def distance_pixel(self, pixel) -> int:
+        return (self.red - pixel[2]) ** 2 + \
+               (self.green - pixel[1]) ** 2 + \
+               (self.blue - pixel[0]) ** 2
+
     def to_rgb_tuple(self) -> tuple:
         return (self.red, self.green, self.blue)
 
-    def to_bgr_tuple(self) -> tuple:
-        return (self.blue, self.green, self.red)
+    def to_bgr(self) -> tuple:
+        return [self.blue, self.green, self.red]
 
     def from_hex_index(self, index):
         hex_string = COLORS[index]

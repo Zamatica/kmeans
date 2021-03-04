@@ -8,7 +8,7 @@ def main():
     img = image.Image("images/random.jpg")
     img.read()
 
-    gen = kmeans.KMeansImage(100, img)
+    gen = kmeans.KMeansImage(5, 50, img)
 
     gen.execute()
 
