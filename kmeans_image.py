@@ -1,7 +1,11 @@
 
 import cv2
 import numpy as np
+import warnings
 import color_class
+
+# Hide Warnings about empty clusters
+np.seterr(divide='ignore', invalid='ignore')
 
 # https://blog.paperspace.com/speed-up-kmeans-numpy-vectorization-broadcasting-profiling/
 #    Mine was terrible slow, so i updated it with this. It's like cocaine
@@ -11,7 +15,6 @@ import color_class
 #    Use this count as a % of often it is added
 #    Generate a picture based off the final %s
 
-np.random.seed(4)
 
 class Centroid:
     def __init__(self, color) -> None:
@@ -46,11 +49,15 @@ class KMeansImage:
 
             self.update_count()
 
-            for centroid_index in range(centroids.shape[0]):
-                cluster_data = img1d[self.assigned_centroids == centroid_index]
-                new_centroid = cluster_data.mean(axis = 0)
+            # Ignore Warnings from Empty Clusters
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore", category=RuntimeWarning)
 
-                centroids[centroid_index] = new_centroid
+                for centroid_index in range(centroids.shape[0]):
+                    cluster_data = img1d[self.assigned_centroids == centroid_index]
+                    new_centroid = cluster_data.mean(axis = 0)
+
+                    centroids[centroid_index] = new_centroid
             
             sse = ((img1d - centroids[self.assigned_centroids]) ** 2).sum() / len(img1d)
             if sse < 0.5:
@@ -86,29 +93,25 @@ class KMeansImage:
 
 
     def build_centroids(self):
-        def sort_centroids(centroids):
-            n = len(centroids)
-            for i in range(n):
-                for j in range(0, n - 1):
-                    gray_scale_j = 0.2126 * centroids[j][0] + 0.7152 * centroids[j][1] + 0.0722 * centroids[j][2]
-                    gray_scale_j2 = 0.2126 * centroids[j + 1][0] + 0.7152 * centroids[j + 1][1] + 0.0722 * centroids[j + 1][2]
+        def build_centroid(gray_scale):
+            red = 0
+            green = 0
+            blue = -1
 
-                    if gray_scale_j2 < gray_scale_j:
-                        for k in range(len(centroids[j])):
-                            centroids[j][k], centroids[j + 1][k] = centroids[j + 1][k], centroids[j][k]
+            while not (0 <= blue <= 255):
+                red = np.random.randint(0, 255)
+                green = np.random.randint(0, 255)
+                blue = int((gray_scale - (red * 0.3 + green * 0.59)) / 0.11)
 
-        centroids = np.random.randint(0, 255, size=(self.k, 3))
-
-        #centroids = []
-        #for j in range(self.k):
-        #    centroid = self.img.image[np.random.randint(self.img.image.shape[0])][np.random.randint(self.img.image.shape[1])]
-        #    centroids.append(centroid)
-#
-        #centroids = np.array(centroids)
-
-        sort_centroids(centroids)
-
-        print(centroids)
+            return [red, blue, green]
+            
+        centroids = []
+        gray_scale = 0
+        step = int(255 / self.k)
+        for _ in range(self.k):
+            centroids.append(build_centroid(gray_scale))
+            gray_scale += step
+        centroids = np.array(centroids)
 
         for i in range(self.k):
             color = color_class.Color()
